@@ -16,7 +16,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return TaskResource::collection(Task::select('title', 'description')->get());
+        return TaskResource::collection(Task::select('id', 'title', 'description')->get());
     }
 
     /**
@@ -27,7 +27,9 @@ class TaskController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        //
+        $task = Task::create($request->all());
+
+        return new TaskResource($task);
     }
 
     /**
@@ -38,7 +40,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+         return new TaskResource($task);
     }
 
     /**
@@ -50,7 +52,9 @@ class TaskController extends Controller
      */
     public function update(UpdateTaskRequest $request, Task $task)
     {
-        //
+        $task->update($request->all());
+
+        return new TaskResource($task);
     }
 
     /**
@@ -61,6 +65,7 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+        return 'ok';
     }
 }
