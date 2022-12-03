@@ -4,6 +4,62 @@ import { createApp } from "vue"
 import App from "./App.vue"
 import route from "./routes/index"
 
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import Quill from 'quill';
+import { ImageDrop } from 'quill-image-drop-module';
+import ImageUploader from 'quill-image-uploader';
+
+
+Quill.register('modules/imageDrop', ImageDrop);
+Quill.register("modules/imageUploader", ImageUploader);
+
+const globalOptions = {
+    modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+          ['blockquote', 'code-block'],
+
+          // [{ 'header': 1 }, { 'header': 2 }],               // custom button values
+          // [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          // [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
+          // [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
+          // [{ 'direction': 'rtl' }],                         // text direction
+
+          [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
+          [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+          [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+          [{ 'font': [] }],
+          [{ 'align': [] }],
+
+          ['clean'],                                         // remove formatting button
+          ['image']
+        ],
+        imageDrop: true,
+        imageUploader: {
+            upload: file => {
+                return new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append("image", file);
+
+                    axios.post('/upload-image', formData)
+                        .then(res => {
+                            resolve(res.data);
+                        })
+                        .catch(err => {
+                            reject("Upload failed");
+                            console.error("Error:", err)
+                        })
+                })
+            }
+        }
+    }
+}
+
+QuillEditor.props.globalOptions.default = () => globalOptions
+
 const app = createApp(App).use(route)
+app.component('QuillEditor', QuillEditor)
 
 app.mount("#app");

@@ -21,7 +21,8 @@
 
                 <div class="col-12">
                     <label class="form-label">Description</label>
-                    <textarea rows="3" v-model="task.description" id="task-description" class="form-control" type="text" @blur="updateTask"></textarea>
+<!--                    <textarea rows="3" v-model="task.description" id="task-description" class="form-control" type="text" @blur="updateTask"></textarea>-->
+                      <QuillEditor theme="snow" ref="quillEditor" @textChange="updateTask"/>
                 </div>
 
             </div>
@@ -49,19 +50,26 @@ export default {
     created() {
         this.$watch(
             () => this.$route.params,
-            (toParams, preParams) => {
+            (toParams) => {
                 if (toParams.taskId) {
                     this.getTask(toParams.taskId)
-
                 }
             },
             { immediate: true }
-        ),
+        )
+        this.$watch(
+            () => this.task,
+            (newVal) => {
+                if (newVal) {
+                    this.$refs.quillEditor.setHTML(newVal.description)
+                }
+            }
+        )
         this.$watch(
             () => this.isSamePage,
-            (newVal, oldVal) => {
+            (newVal) => {
                 if (newVal) {
-                    if (this.isOpenTask == true) {
+                    if (this.isOpenTask === true) {
                         this.onCloseTaskAction()
                     }
                     else {
@@ -75,6 +83,7 @@ export default {
     },
     methods: {
         updateTask() {
+            this.task.description = this.$refs.quillEditor.getHTML()
             this.updateTask(this.task, true)
         },
         deleteTask() {
@@ -82,11 +91,11 @@ export default {
             this.$router.push({ name: 'task.index' })
         },
         closingTask(event) {
-            if (this.isCloseTask == true) {
+            if (this.isCloseTask === true) {
                 return ;
             }
 
-            if (this.isSamePage == false) {
+            if (this.isSamePage === false) {
                 event.preventDefault()
             }
         },

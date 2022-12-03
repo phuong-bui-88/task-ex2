@@ -15,7 +15,10 @@
     "dependencies": {
         "@popperjs/core": "^2.11.6",
         "@vitejs/plugin-vue": "^3.0.1",
+        "@vueup/vue-quill": "^1.0.0",
         "bootstrap": "^5.2.0",
+        "quill-image-drop-module": "^1.0.3",
+        "quill-image-uploader": "^1.2.3",
         "vue-router": "^4.1.5"
     }
 }
