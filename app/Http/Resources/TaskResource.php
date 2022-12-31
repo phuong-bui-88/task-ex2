@@ -18,6 +18,8 @@ class TaskResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            'start_date' => $this->when($request->routeIs('tasks.show'), $this->start_date),
+            'documents' => $this->when($request->routeIs('tasks.show'), $this->documents),
         ];
     }
 }

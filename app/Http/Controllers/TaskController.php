@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
+use App\Jobs\ProcessCalendarTask;
 use App\Models\Task;
 
 class TaskController extends Controller
@@ -29,6 +30,10 @@ class TaskController extends Controller
     {
         $task = Task::create($request->all());
 
+        ProcessCalendarTask::dispatch(
+            $task, ProcessCalendarTask::CREATE
+        );
+
         return new TaskResource($task);
     }
 
@@ -50,9 +55,12 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateTaskRequest $request, Task $task)
+    public function update(StoreTaskRequest $request, Task $task)
     {
         $task->update($request->all());
+
+        ProcessCalendarTask::dispatchIf(isset($task->calendar_id),
+        $task, ProcessCalendarTask::UPDATE);
 
         return new TaskResource($task);
     }
@@ -65,6 +73,9 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
+        ProcessCalendarTask::dispatchIf(isset($task->calendar_id),
+        null, ProcessCalendarTask::DELETE, $task->calendar_id);
+
         $task->delete();
         return 'ok';
     }
