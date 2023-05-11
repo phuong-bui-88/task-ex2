@@ -1,9 +1,9 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTaskRequest;
-use App\Http\Requests\UpdateTaskRequest;
+use App\Http\Requests\TaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Jobs\ProcessCalendarTask;
 use App\Models\Task;
@@ -15,9 +15,37 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(TaskRequest $request)
     {
-        return TaskResource::collection(Task::select('id', 'title', 'description')->get());
+        $tasks = [];
+        $hasIndex = $request->getTaskIndex();
+
+        $remainCount = $this->searchTasks($tasks, '>', $request->isRemainStatusActive(), $hasIndex);
+        $allCount = $this->searchTasks($tasks, null, $request->isAllStatusActive(), $hasIndex);
+        $overDateCount = $this->searchTasks($tasks, '<', $request->isOverDateStatusActive(), $hasIndex);
+
+        return TaskResource::collection($tasks)
+            ->additional(compact('remainCount', 'allCount', 'overDateCount'));
+    }
+
+    public function searchTasks(&$tasks, $operator, $data, $hasIndex) {
+        if (!$hasIndex) {
+            $query = ($operator)
+                ? Task::where('start_date', $operator, now())
+                : Task::whereNotNull('start_date');
+        }
+        else {
+            $query = Task::search('', function ($meiliSearch, string $query, array $options) use ($operator) {
+                ($operator)
+                && $options['filter'] = sprintf('start_date_timestamp %s %s', $operator, now()->timestamp);
+
+                return $meiliSearch->search($query, $options);
+            });
+        }
+
+        ($data) && $tasks = $query->get();
+
+        return $query->count();
     }
 
     /**

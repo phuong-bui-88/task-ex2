@@ -19,7 +19,7 @@ app.use(SetupCalendar, {masks: {input: GlobalConst.DATE_FORMAT}})
 
 app.component('QuillEditor', QuillEditor)
 app.component('FilePond', FilePond)
-app.component('Calendar', Calendar)
+app.component('VCalendar', Calendar)
 app.component('DatePicker', DatePicker)
 
 app.mount("#app");

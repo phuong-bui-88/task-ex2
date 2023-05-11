@@ -1,17 +1,30 @@
 import { ref } from 'vue'
 import axios  from "axios"
-
+import GlobalConst from './../consts/base.js'
 
 const tasks = ref({})
+const remainCount = ref(0)
+const allCount = ref(0)
+const overDateCount = ref(0)
+const taskStatus = ref(GlobalConst.ALL_STATUS)
 
 export default function useTask() {
     const task = ref({})
 
-    const getTasks = async () => {
-        axios.get('/api/tasks')
-            .then(response => {
-                tasks.value = response.data.data
-            })
+    const getTasks = async (queryTask = '', hasIndex = true) => {
+        let status = ''
+        status = (GlobalConst.ALL_STATUS == taskStatus.value) ? '?status=0' : status
+        status = (GlobalConst.REMAIN_STATUS == taskStatus.value) ? '?status=1' : status
+        status = (GlobalConst.OVER_DATE_STATUS == taskStatus.value) ? '?status=2' : status
+
+        hasIndex = (hasIndex) ? '' : '&index=0'
+        queryTask = queryTask + status + hasIndex
+
+        let result = await axios.get('/api/tasks' + queryTask)
+        tasks.value = result.data.data
+        allCount.value = result.data.allCount
+        remainCount.value = result.data.remainCount
+        overDateCount.value = result.data.overDateCount
     }
 
     const getTask = async (taskId) => {
@@ -50,5 +63,5 @@ export default function useTask() {
         }
     }
 
-    return { tasks, task, getTask, getTasks, updateTask, deleteTask, storeTask }
+    return { tasks, task, taskStatus, remainCount, allCount, overDateCount, getTask, getTasks, updateTask, deleteTask, storeTask }
 }
